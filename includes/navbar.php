@@ -17,12 +17,6 @@
         <li class="nav-item">
             <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
         </li>
-        <!-- <li class="nav-item d-none d-sm-inline-block">
-            <a href="index3.html" class="nav-link">Home</a>
-        </li>
-        <li class="nav-item d-none d-sm-inline-block">
-            <a href="#" class="nav-link">Contact</a>
-        </li> -->
     </ul>
 
     <!-- Right navbar links -->
@@ -36,18 +30,18 @@
                 <!-- <span class="badge badge-warning navbar-badge">15</span> -->
             </a>
             <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                <span class="dropdown-header">Profile</span>
-                <div class="dropdown-divider"></div>
+                <span class="dropdown-header">Profile Menu</span>
+                <!-- <div class="dropdown-divider"></div>
                 <a data-toggle="modal" data-target="#modalUbahPassword" class="dropdown-item">
                     Ubah Password
-                </a>
+                </a> -->
                 <!-- <div class="dropdown-divider"></div>
                 <a href="#" class="dropdown-item">
                     <i class="fas fa-file mr-2"></i> 3 new reports
                     <span class="float-right text-muted text-sm">2 days</span> -->
                 </a>
                 <div class="dropdown-divider"></div>
-                <a href="/auth/logout.php" class="dropdown-item dropdown-footer logout-link" style=":hover { background-color:red }" onclick="return confirm('Apakah anda yakin ingin keluar?');"><i class="nav-icon fas fa-sign-out-alt"></i> Logout</a>
+                <a href="/auth/logout.php" class="dropdown-item dropdown-footer logout-link" onclick="return confirm('Apakah anda yakin ingin keluar?');"><i class="nav-icon fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </li>
 
