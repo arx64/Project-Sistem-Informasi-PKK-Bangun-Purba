@@ -17,7 +17,7 @@ if (isset($_POST['tambah'])) {
     $stmt->execute();
     $stmt->close();
 
-    header("Location: anggota");
+    header("Location: /anggota");
     exit;
 }
 
@@ -77,7 +77,11 @@ $qDawis = $conn->query("SELECT * FROM dawis ORDER BY nama_dawis ASC");
         <div class="content-wrapper">
             <div class="content-header">
                 <div class="container-fluid">
-                    <h1 class="m-0">Manajemen Anggota PKK</h1>
+                    <?php if (in_array($_SESSION['role'], ['admin', 'pkk'])) {
+                        echo '<h1 class="m-0">Manajemen Anggota PKK</h1>';
+                    } else {
+                        echo '<h1 class="m-0">Data Anggota PKK</h1>';
+                    } ?>
                 </div>
             </div>
 
@@ -85,35 +89,40 @@ $qDawis = $conn->query("SELECT * FROM dawis ORDER BY nama_dawis ASC");
                 <div class="container-fluid">
 
                     <!-- Form Tambah Anggota -->
-                    <div class="card">
-                        <div class="card-header bg-primary text-white">
-                            <i class="fas fa-user-plus"></i> Tambah Anggota
+                    <?php if (in_array($_SESSION['role'], ['admin', 'pkk'])): ?>
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <i class="fas fa-user-plus"></i> Tambah Anggota
+                            </div>
+                            <div class="card-body">
+                                <form method="POST">
+                                    <div class="form-group">
+                                        <label>Nama Anggota</label>
+                                        <input type="text" name="nama_anggota" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Alamat</label>
+                                        <textarea name="alamat" class="form-control" required></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Asal Dawis</label>
+                                        <select name="id_dawis" class="form-control" required>
+                                            <option value="">-- Pilih Dawis --</option>
+                                            <?php while ($d = $qDawis->fetch_assoc()): ?>
+                                                <option value="<?= $d['id_dawis'] ?>">
+                                                    <?= $d['nama_dawis'] ?> (RT <?= $d['rt'] ?>/RW <?= $d['rw'] ?>)
+                                                </option>
+                                            <?php endwhile; ?>
+                                        </select>
+                                    </div>
+                                    <button type="submit" name="tambah" class="btn btn-success">
+                                        <i class="fas fa-save"></i> Simpan
+                                    </button>
+                                </form>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <form method="POST">
-                                <div class="form-group">
-                                    <label>Nama Anggota</label>
-                                    <input type="text" name="nama_anggota" class="form-control" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Alamat</label>
-                                    <textarea name="alamat" class="form-control" required></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label>Asal Dawis</label>
-                                    <select name="id_dawis" class="form-control" required>
-                                        <option value="">-- Pilih Dawis --</option>
-                                        <?php while ($d = $qDawis->fetch_assoc()) { ?>
-                                            <option value="<?= $d['id_dawis'] ?>"><?= $d['nama_dawis'] ?> (RT <?= $d['rt'] ?>/RW <?= $d['rw'] ?>)</option>
-                                        <?php } ?>
-                                    </select>
-                                </div>
-                                <button type="submit" name="tambah" class="btn btn-success">
-                                    <i class="fas fa-save"></i> Simpan
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+                    <?php endif; ?>
+
 
                     <!-- Tabel Anggota -->
                     <div class="card mt-3">
@@ -160,29 +169,40 @@ $qDawis = $conn->query("SELECT * FROM dawis ORDER BY nama_dawis ASC");
                                     }
 
                                     $data = mysqli_query($conn, "
-    SELECT anggota.*, dawis.nama_dawis 
-    FROM anggota 
-    JOIN dawis ON anggota.id_dawis = dawis.id_dawis 
-    $filter
-");
+        SELECT anggota.*, dawis.nama_dawis 
+        FROM anggota 
+        JOIN dawis ON anggota.id_dawis = dawis.id_dawis 
+        $filter
+    ");
 
                                     $no = 1;
                                     while ($row = mysqli_fetch_assoc($data)) {
-                                        // print_r($row);
                                         echo "<tr>
-                                        <td>{$no}</td>
-                                        <td>{$row['nama_anggota']}</td>
-                                        <td>{$row['alamat']}</td>
-                                        <td>{$row['nama_dawis']}</td>
-                                        <td>
-                                            <a href='anggota_edit.php?id={$row['id_anggota']}' class='btn btn-warning btn-sm'><i class='fas fa-edit'></i></a>
-                                            <a href='?hapus={$row['id_anggota']}' class='btn btn-danger btn-sm' onclick=\"return confirm('Hapus data?')\"><i class='fas fa-trash'></i></a>
-                                        </td>
-                                    </tr>";
+            <td>{$no}</td>
+            <td>{$row['nama_anggota']}</td>
+            <td>{$row['alamat']}</td>
+            <td>{$row['nama_dawis']}</td>
+            <td>";
+
+                                        // Hanya tampilkan edit/hapus untuk role admin & pkk
+                                        if (in_array($_SESSION['role'], ['admin', 'pkk'])) {
+                                            echo "<a href='anggota_edit.php?id={$row['id_anggota']}' class='btn btn-warning btn-sm'>
+                    <i class='fas fa-edit'></i>
+                  </a>
+                  <a href='?hapus={$row['id_anggota']}' class='btn btn-danger btn-sm' onclick=\"return confirm('Hapus data?')\">
+                    <i class='fas fa-trash'></i>
+                  </a>";
+                                        } else {
+                                            echo "<span class='text-muted'>Tidak ada aksi</span>";
+                                        }
+
+                                        echo "</td>
+        </tr>";
                                         $no++;
                                     }
                                     ?>
                                 </tbody>
+
                             </table>
 
                         </div>

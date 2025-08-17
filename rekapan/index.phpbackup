@@ -1,0 +1,228 @@
+<?php
+session_start();
+if (!in_array($_SESSION['role'], ['admin', 'pkk'])) {
+    header("Location: ../auth/login.php");
+    exit;
+}
+include '../config/db.php';
+
+// Filter tahun
+$tahun = isset($_GET['tahun']) ? intval($_GET['tahun']) : date('Y');
+
+// Ambil daftar tahun dari tabel kegiatan
+$qTahun = mysqli_query($conn, "SELECT DISTINCT YEAR(tanggal) as tahun FROM kegiatan ORDER BY tahun DESC");
+
+// Query rekap per anggota (tabel)
+$query = "
+    SELECT 
+        a.nama_anggota,
+        YEAR(k.tanggal) AS tahun,
+        SUM(CASE WHEN h.status = 'Hadir' THEN 1 ELSE 0 END) AS total_hadir,
+        SUM(CASE WHEN h.status = 'Izin' THEN 1 ELSE 0 END) AS total_izin,
+        SUM(CASE WHEN h.status = 'Tidak Hadir' THEN 1 ELSE 0 END) AS total_tidak_hadir
+    FROM kehadiran h
+    LEFT JOIN anggota a ON h.id_anggota = a.id_anggota
+    LEFT JOIN kegiatan k ON h.id_kegiatan = k.id_kegiatan
+    WHERE YEAR(k.tanggal) = $tahun
+    GROUP BY a.nama_anggota, YEAR(k.tanggal)
+    ORDER BY a.nama_anggota
+";
+$result = $conn->query($query);
+
+// Query rekap per bulan (grafik)
+$qGrafik = "
+    SELECT 
+        MONTH(k.tanggal) as bulan,
+        SUM(CASE WHEN h.status = 'Hadir' THEN 1 ELSE 0 END) as hadir,
+        SUM(CASE WHEN h.status = 'Izin' THEN 1 ELSE 0 END) as izin,
+        SUM(CASE WHEN h.status = 'Tidak Hadir' THEN 1 ELSE 0 END) as tidak_hadir
+    FROM kehadiran h
+    LEFT JOIN kegiatan k ON h.id_kegiatan = k.id_kegiatan
+    WHERE YEAR(k.tanggal) = $tahun
+    GROUP BY MONTH(k.tanggal)
+    ORDER BY bulan
+";
+$resGrafik = $conn->query($qGrafik);
+
+$bulanArr = [];
+$hadirArr = [];
+$izinArr = [];
+$tidakArr = [];
+
+for ($i = 1; $i <= 12; $i++) {
+    $bulanArr[$i] = date('F', mktime(0, 0, 0, $i, 1)); // Nama bulan
+    $hadirArr[$i] = 0;
+    $izinArr[$i] = 0;
+    $tidakArr[$i] = 0;
+}
+
+while ($row = $resGrafik->fetch_assoc()) {
+    $bulan = (int)$row['bulan'];
+    $hadirArr[$bulan] = (int)$row['hadir'];
+    $izinArr[$bulan] = (int)$row['izin'];
+    $tidakArr[$bulan] = (int)$row['tidak_hadir'];
+}
+
+?>
+
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rekap Kehadiran Pertahun</title>
+    <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="../dist/css/adminlte.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+
+        <?php include '../includes/navbar.php'; ?>
+        <?php include '../includes/side_bar.php'; ?>
+
+        <div class="content-wrapper">
+            <div class="content-header">
+                <div class="container-fluid">
+                    <h1 class="m-0">Rekap Kehadiran Pertahun</h1>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="container-fluid">
+
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <i class="fas fa-calendar-alt"></i> Rekap Kehadiran Tahun <?= htmlspecialchars($tahun) ?>
+                        </div>
+                        <div class="card-body">
+
+                            <!-- Filter Tahun -->
+                            <form method="GET" class="mb-3">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <select name="tahun" class="form-control" onchange="this.form.submit()">
+                                            <?php while ($row = mysqli_fetch_assoc($qTahun)): ?>
+                                                <option value="<?= $row['tahun'] ?>" <?= ($tahun == $row['tahun']) ? 'selected' : '' ?>>
+                                                    <?= $row['tahun'] ?>
+                                                </option>
+                                            <?php endwhile; ?>
+                                        </select>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <!-- Grafik Rekap Bulanan -->
+                            <canvas id="grafikKehadiran" height="100"></canvas>
+
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <i class="fas fa-table"></i> Tabel Rekap Kehadiran
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Nama Anggota</th>
+                                            <th>Hadir</th>
+                                            <th>Izin</th>
+                                            <th>Tidak Hadir</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        $no = 1;
+                                        if ($result->num_rows > 0) {
+                                            while ($row = $result->fetch_assoc()) {
+                                                echo "<tr>
+                                                    <td>{$no}</td>
+                                                    <td>" . htmlspecialchars($row['nama_anggota']) . "</td>
+                                                    <td>{$row['total_hadir']}</td>
+                                                    <td>{$row['total_izin']}</td>
+                                                    <td>{$row['total_tidak_hadir']}</td>
+                                                </tr>";
+                                                $no++;
+                                            }
+                                        } else {
+                                            echo "<tr><td colspan='5' class='text-center'>Tidak ada data kehadiran tahun $tahun</td></tr>";
+                                        }
+                                        ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <?php include '../includes/footer.php'; ?>
+
+    </div>
+
+    <script src="../plugins/jquery/jquery.min.js"></script>
+    <script src="../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../dist/js/adminlte.min.js"></script>
+
+    <script>
+        const ctx = document.getElementById('grafikKehadiran').getContext('2d');
+        const grafikKehadiran = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: <?= json_encode(array_values($bulanArr)) ?>,
+                datasets: [{
+                        label: 'Hadir',
+                        data: <?= json_encode(array_values($hadirArr)) ?>,
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Izin',
+                        data: <?= json_encode(array_values($izinArr)) ?>,
+                        backgroundColor: 'rgba(255, 193, 7, 0.7)',
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Tidak Hadir',
+                        data: <?= json_encode(array_values($tidakArr)) ?>,
+                        backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                        borderColor: 'rgba(220, 53, 69, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Grafik Kehadiran Bulanan Tahun <?= $tahun ?>'
+                    },
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

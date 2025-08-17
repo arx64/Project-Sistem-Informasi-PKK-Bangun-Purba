@@ -1,11 +1,16 @@
 <?php
 error_reporting(0);
+// kegiatan.php
+
+// Koneksi database
 include 'config/db.php';
+
+// Ambil data kegiatan beserta nama dawis
 $query = "
-    SELECT k.*, d.nama_dawis
+    SELECT k.*, d.nama_dawis 
     FROM kegiatan k
     LEFT JOIN dawis d ON k.id_dawis = d.id_dawis
-    ORDER BY k.tanggal DESC LIMIT 8
+    ORDER BY k.tanggal DESC
 ";
 $result = $conn->query($query);
 ?>
@@ -15,7 +20,7 @@ $result = $conn->query($query);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sistem Informasi PKK</title>
+    <title>Kegiatan - Sistem Informasi PKK</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -92,9 +97,9 @@ $result = $conn->query($query);
             </button>
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav ms-auto text-center">
-                    <li class="nav-item"><a class="nav-link nav-link-active" href="/index.php"><i class="bi bi-house-door"></i> Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/index.php"><i class="bi bi-house-door"></i> Beranda</a></li>
                     <li class="nav-item"><a class="nav-link" href="/profil.php"><i class="bi bi-person"></i> Profil</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/kegiatan.php"><i class="bi bi-calendar-event"></i> Kegiatan</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-active" href="/kegiatan.php"><i class="bi bi-calendar-event"></i> Kegiatan</a></li>
                     <li class="nav-item"><a class="nav-link" href="/kontak.php"><i class="bi bi-envelope"></i> Kontak</a></li>
                 </ul>
             </div>
@@ -104,14 +109,14 @@ $result = $conn->query($query);
     <!-- Hero Banner -->
     <div class="hero img-hero">
         <div class="container bg-dark bg-opacity-50 p-2 rounded">
-            <h1 class="fw-bold">Selamat Datang di Sistem Informasi PKK</h1>
-            <p class="lead">Kecamatan Bangun Purba</p>
+            <h1 class="fw-bold">Daftar Kegiatan PKK</h1>
+            <p class="lead">Lihat semua kegiatan dan acara PKK Bangun Purba</p>
         </div>
     </div>
 
-    <!-- Berita -->
+    <!-- List Kegiatan -->
     <div class="container my-5">
-        <h2 class="mb-4 text-success">Berita & Kegiatan Terbaru</h2>
+        <h2 class="mb-4 text-success">Semua Kegiatan</h2>
         <div class="row g-4">
             <?php if ($result->num_rows > 0) { ?>
                 <?php while ($row = $result->fetch_assoc()) {

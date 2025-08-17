@@ -46,6 +46,7 @@ $data = $q->fetch_assoc();
             <div class="content">
                 <div class="container-fluid text-center">
                     <canvas id="chartKehadiran" style="max-width: 400px; margin:auto;"></canvas>
+                    <button class="btn btn-primary mt-3"><a href="/kehadiran/index.php" class="text-white fas fa-arrow-left"> Kembali</a></button>
                 </div>
             </div>
         </div>

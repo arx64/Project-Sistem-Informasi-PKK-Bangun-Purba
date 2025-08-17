@@ -1,13 +1,34 @@
 <?php
-error_reporting(0);
+// detail_kegiatan.php
+
 include 'config/db.php';
+
+// Ambil ID dari URL
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    header("Location: kegiatan.php");
+    exit;
+}
+
+$id_kegiatan = intval($_GET['id']);
+
+// Ambil data kegiatan
 $query = "
-    SELECT k.*, d.nama_dawis
+    SELECT k.*, d.nama_dawis 
     FROM kegiatan k
     LEFT JOIN dawis d ON k.id_dawis = d.id_dawis
-    ORDER BY k.tanggal DESC LIMIT 8
+    WHERE k.id_kegiatan = ?
+    LIMIT 1
 ";
-$result = $conn->query($query);
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $id_kegiatan);
+$stmt->execute();
+$result = $stmt->get_result();
+$kegiatan = $result->fetch_assoc();
+
+if (!$kegiatan) {
+    header("Location: kegiatan.php");
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -15,7 +36,7 @@ $result = $conn->query($query);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sistem Informasi PKK</title>
+    <title><?php echo htmlspecialchars($kegiatan['nama_kegiatan']); ?> - PKK Bangun Purba</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -44,11 +65,6 @@ $result = $conn->query($query);
             text-align: center;
         }
 
-        .card-img-top {
-            height: 180px;
-            object-fit: cover;
-        }
-
         footer {
             background-color: #004d00;
             color: white;
@@ -67,13 +83,10 @@ $result = $conn->query($query);
             height: 300px;
         }
 
-        a {
-            text-decoration: none;
-            color: black;
-        }
-
-        a:hover {
-            color: #006400;
+        .detail-img {
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -92,9 +105,9 @@ $result = $conn->query($query);
             </button>
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav ms-auto text-center">
-                    <li class="nav-item"><a class="nav-link nav-link-active" href="/index.php"><i class="bi bi-house-door"></i> Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/index.php"><i class="bi bi-house-door"></i> Beranda</a></li>
                     <li class="nav-item"><a class="nav-link" href="/profil.php"><i class="bi bi-person"></i> Profil</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/kegiatan.php"><i class="bi bi-calendar-event"></i> Kegiatan</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-active" href="/kegiatan.php"><i class="bi bi-calendar-event"></i> Kegiatan</a></li>
                     <li class="nav-item"><a class="nav-link" href="/kontak.php"><i class="bi bi-envelope"></i> Kontak</a></li>
                 </ul>
             </div>
@@ -104,37 +117,24 @@ $result = $conn->query($query);
     <!-- Hero Banner -->
     <div class="hero img-hero">
         <div class="container bg-dark bg-opacity-50 p-2 rounded">
-            <h1 class="fw-bold">Selamat Datang di Sistem Informasi PKK</h1>
-            <p class="lead">Kecamatan Bangun Purba</p>
+            <h1 class="fw-bold"><?php echo htmlspecialchars($kegiatan['nama_kegiatan']); ?></h1>
+            <p class="lead"><?php echo date('d M Y', strtotime($kegiatan['tanggal'])); ?> | <?php echo htmlspecialchars($kegiatan['nama_dawis']); ?></p>
         </div>
     </div>
 
-    <!-- Berita -->
+    <!-- Konten Detail -->
     <div class="container my-5">
-        <h2 class="mb-4 text-success">Berita & Kegiatan Terbaru</h2>
         <div class="row g-4">
-            <?php if ($result->num_rows > 0) { ?>
-                <?php while ($row = $result->fetch_assoc()) {
-                    $foto = !empty($row['foto']) ? 'uploads/kegiatan/' . htmlspecialchars($row['foto']) : 'uploads/no-image-available.png';
-                ?>
-                    <div class="col-lg-3 col-md-4 col-sm-6">
-                        <div class="card shadow-sm h-100">
-                            <a href="detail_kegiatan.php?id=<?php echo $row['id_kegiatan']; ?>">
-                                <img src="<?php echo $foto; ?>" class="card-img-top" alt="Foto Kegiatan">
-                                <div class="card-body">
-                                    <h5 class="card-title"><?php echo htmlspecialchars($row['nama_kegiatan']); ?></h5>
-                                    <p class="card-text"><?php echo substr(strip_tags($row['deskripsi']), 0, 100) . '...'; ?></p>
-                                </div>
-                                <div class="card-footer small text-muted">
-                                    <?php echo htmlspecialchars($row['nama_dawis']); ?> | <?php echo date('d M Y', strtotime($row['tanggal'])); ?>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                <?php } ?>
-            <?php } else { ?>
-                <p class="text-muted">Belum ada kegiatan yang tersedia.</p>
-            <?php } ?>
+            <div class="col-md-6">
+                <img src="uploads/kegiatan/<?php echo htmlspecialchars($kegiatan['foto']); ?>" class="img-fluid detail-img shadow" alt="Foto Kegiatan">
+            </div>
+            <div class="col-md-6">
+                <h3 class="text-success">Deskripsi Kegiatan</h3>
+                <p><?php echo nl2br(htmlspecialchars($kegiatan['deskripsi'])); ?></p>
+            </div>
+        </div>
+        <div class="mt-4">
+            <a href="kegiatan.php" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Kembali ke Daftar Kegiatan</a>
         </div>
     </div>
 
@@ -150,7 +150,7 @@ $result = $conn->query($query);
                     <h5>Link Terkait</h5>
                     <ul class="list-unstyled">
                         <li><a href="#"><i class="bi bi-tiktok"></i> Tiktok</a></li>
-                        <li><a href="https://www.instagram.com/pkkbangunpurba/"><i class="bi bi-instagram"></i> IG</a></li>
+                        <li><a href="#"><i class="bi bi-instagram"></i> IG</a></li>
                         <li><a href="#"><i class="bi bi-facebook"></i> FB</a></li>
                     </ul>
                 </div>

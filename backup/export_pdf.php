@@ -1,48 +1,82 @@
 <?php
-require('../fpdf/fpdf.php');
+session_start();
+// Pastikan hanya admin yang bisa mengakses
+if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') {
+    header("Location: ../auth/login.php");
+    exit;
+}
+
 include '../config/db.php';
+// Sertakan pustaka FPDF
+require('../fpdf/fpdf.php');
 
-// Ambil data laporan (JOIN ke tabel dawis & kegiatan)
-$query = $conn->query("
-    SELECT k.id_kegiatan, k.nama_kegiatan, k.tanggal, k.deskripsi, d.nama_dawis
-    FROM kegiatan k
-    LEFT JOIN dawis d ON k.id_dawis = d.id_dawis
-    ORDER BY k.tanggal DESC
-");
+// Periksa apakah parameter 'table' ada
+if (!isset($_GET['table']) || empty($_GET['table'])) {
+    die("Error: Nama tabel tidak disediakan.");
+}
 
-// Inisialisasi PDF
-$pdf = new FPDF('L', 'mm', 'A4'); // L = Landscape
+$tableName = $_GET['table'];
+
+// --- Keamanan: Validasi Nama Tabel ---
+$allowedTables = [];
+$result = $conn->query("SHOW TABLES");
+while ($row = $result->fetch_array()) {
+    $allowedTables[] = $row[0];
+}
+if (!in_array($tableName, $allowedTables)) {
+    die("Error: Nama tabel tidak valid atau tidak ditemukan.");
+}
+// --- Akhir Validasi Keamanan ---
+
+// Ambil data dan nama kolom dari tabel
+$result = $conn->query("SELECT * FROM `" . $tableName . "`");
+if (!$result) {
+    die("Error saat mengambil data: " . $conn->error);
+}
+$fields = $result->fetch_fields();
+$header = [];
+foreach ($fields as $field) {
+    $header[] = $field->name;
+}
+
+// Inisialisasi PDF (L untuk Landscape agar lebih muat)
+$pdf = new FPDF('L', 'mm', 'A4');
 $pdf->AddPage();
-$pdf->SetFont('Arial', 'B', 16);
-$pdf->Cell(0, 10, 'Laporan Kegiatan PKK', 0, 1, 'C');
 
+// Judul Dokumen
+$pdf->SetFont('Arial', 'B', 14);
+$pdf->Cell(277, 10, 'Data Tabel: ' . ucfirst($tableName), 0, 1, 'C');
 $pdf->Ln(5);
-$pdf->SetFont('Arial', '', 12);
-$pdf->Cell(0, 6, 'Tanggal Cetak: ' . date('d-m-Y'), 0, 1, 'R');
-$pdf->Ln(3);
 
 // Header Tabel
-$pdf->SetFont('Arial', 'B', 11);
-$pdf->SetFillColor(230, 230, 230); // Warna abu-abu muda
-$header = ['No', 'Nama Kegiatan', 'Tanggal', 'Deskripsi', 'Dawis'];
-$w = [10, 70, 25, 120, 40]; // Lebar kolom
+$pdf->SetFont('Arial', 'B', 9);
+$pdf->SetFillColor(230, 230, 230); // Warna abu-abu untuk header
+$num_columns = count($header);
+$page_width = 277; // Lebar halaman A4 landscape dikurangi margin
+$col_width = $page_width / $num_columns; // Lebar kolom dinamis
 
-for ($i = 0; $i < count($header); $i++) {
-    $pdf->Cell($w[$i], 8, $header[$i], 1, 0, 'C', true);
+foreach ($header as $col) {
+    $pdf->Cell($col_width, 7, $col, 1, 0, 'C', true);
 }
 $pdf->Ln();
 
 // Isi Tabel
-$pdf->SetFont('Arial', '', 10);
-$no = 1;
-while ($row = $query->fetch_assoc()) {
-    $pdf->Cell($w[0], 8, $no++, 1, 0, 'C');
-    $pdf->Cell($w[1], 8, $row['nama_kegiatan'], 1);
-    $pdf->Cell($w[2], 8, date('d-m-Y', strtotime($row['tanggal'])), 1, 0, 'C');
-    $pdf->Cell($w[3], 8, $row['deskripsi'], 1);
-    $pdf->Cell($w[4], 8, $row['nama_dawis'] ?? '-', 1, 0, 'C');
+$pdf->SetFont('Arial', '', 8);
+while ($row = $result->fetch_assoc()) {
+    foreach ($header as $col) {
+        // Potong teks yang terlalu panjang agar tidak merusak layout
+        $cellText = $row[$col];
+        if ($pdf->GetStringWidth($cellText) > $col_width - 2) {
+            $cellText = substr($cellText, 0, 25) . '...'; // Sesuaikan panjang pemotongan
+        }
+        $pdf->Cell($col_width, 6, $cellText, 1);
+    }
     $pdf->Ln();
 }
 
-// Output PDF
-$pdf->Output('D', 'laporan_kegiatan_' . date('Y-m-d') . '.pdf');
+// Output PDF untuk di-download
+$fileName = $tableName . '_export_' . date('Y-m-d') . '.pdf';
+$pdf->Output('D', $fileName);
+
+$conn->close();
+exit;

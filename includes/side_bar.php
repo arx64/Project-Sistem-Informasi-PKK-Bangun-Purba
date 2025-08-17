@@ -69,6 +69,12 @@ $role = $_SESSION['role'] ?? '';
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="/rekapan" class="nav-link">
+                            <i class="nav-icon fas fa-chart-bar"></i>
+                            <p>Rekapan Kehadiran</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="/backup" class="nav-link">
                             <i class="nav-icon fas fa-database"></i>
                             <p>Backup/Export</p>
@@ -116,6 +122,12 @@ $role = $_SESSION['role'] ?? '';
                         <a href="/anggota" class="nav-link">
                             <i class="nav-icon fas fa-user-plus"></i>
                             <p>Tambah Anggota</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/dawis" class="nav-link">
+                            <i class="nav-icon fas fa-home"></i>
+                            <p>Dawis</p>
                         </a>
                     </li>
                     <li class="nav-item">

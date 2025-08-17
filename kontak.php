@@ -1,21 +1,10 @@
-<?php
-error_reporting(0);
-include 'config/db.php';
-$query = "
-    SELECT k.*, d.nama_dawis
-    FROM kegiatan k
-    LEFT JOIN dawis d ON k.id_dawis = d.id_dawis
-    ORDER BY k.tanggal DESC LIMIT 8
-";
-$result = $conn->query($query);
-?>
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sistem Informasi PKK</title>
+    <title>Kontak - Sistem Informasi PKK</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -44,11 +33,6 @@ $result = $conn->query($query);
             text-align: center;
         }
 
-        .card-img-top {
-            height: 180px;
-            object-fit: cover;
-        }
-
         footer {
             background-color: #004d00;
             color: white;
@@ -65,15 +49,6 @@ $result = $conn->query($query);
             background-size: cover;
             background-position: center;
             height: 300px;
-        }
-
-        a {
-            text-decoration: none;
-            color: black;
-        }
-
-        a:hover {
-            color: #006400;
         }
     </style>
 </head>
@@ -92,10 +67,10 @@ $result = $conn->query($query);
             </button>
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav ms-auto text-center">
-                    <li class="nav-item"><a class="nav-link nav-link-active" href="/index.php"><i class="bi bi-house-door"></i> Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/index.php"><i class="bi bi-house-door"></i> Beranda</a></li>
                     <li class="nav-item"><a class="nav-link" href="/profil.php"><i class="bi bi-person"></i> Profil</a></li>
                     <li class="nav-item"><a class="nav-link" href="/kegiatan.php"><i class="bi bi-calendar-event"></i> Kegiatan</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/kontak.php"><i class="bi bi-envelope"></i> Kontak</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-active" href="/kontak.php"><i class="bi bi-envelope"></i> Kontak</a></li>
                 </ul>
             </div>
         </div>
@@ -104,37 +79,51 @@ $result = $conn->query($query);
     <!-- Hero Banner -->
     <div class="hero img-hero">
         <div class="container bg-dark bg-opacity-50 p-2 rounded">
-            <h1 class="fw-bold">Selamat Datang di Sistem Informasi PKK</h1>
-            <p class="lead">Kecamatan Bangun Purba</p>
+            <h1 class="fw-bold">Hubungi Kami</h1>
+            <p class="lead">Informasi kontak dan form kirim pesan</p>
         </div>
     </div>
 
-    <!-- Berita -->
+    <!-- Konten Kontak -->
     <div class="container my-5">
-        <h2 class="mb-4 text-success">Berita & Kegiatan Terbaru</h2>
         <div class="row g-4">
-            <?php if ($result->num_rows > 0) { ?>
-                <?php while ($row = $result->fetch_assoc()) {
-                    $foto = !empty($row['foto']) ? 'uploads/kegiatan/' . htmlspecialchars($row['foto']) : 'uploads/no-image-available.png';
-                ?>
-                    <div class="col-lg-3 col-md-4 col-sm-6">
-                        <div class="card shadow-sm h-100">
-                            <a href="detail_kegiatan.php?id=<?php echo $row['id_kegiatan']; ?>">
-                                <img src="<?php echo $foto; ?>" class="card-img-top" alt="Foto Kegiatan">
-                                <div class="card-body">
-                                    <h5 class="card-title"><?php echo htmlspecialchars($row['nama_kegiatan']); ?></h5>
-                                    <p class="card-text"><?php echo substr(strip_tags($row['deskripsi']), 0, 100) . '...'; ?></p>
-                                </div>
-                                <div class="card-footer small text-muted">
-                                    <?php echo htmlspecialchars($row['nama_dawis']); ?> | <?php echo date('d M Y', strtotime($row['tanggal'])); ?>
-                                </div>
-                            </a>
-                        </div>
+            <!-- Info Kontak -->
+            <div class="col-md-5">
+                <h3 class="text-success">Informasi Kontak</h3>
+                <p><i class="bi bi-geo-alt"></i> Jl. Perintis Kemerdekaan, Bangun Purba Tengah, Kec. Bangun Purba, Kabupaten Deli Serdang, Sumatera Utara 20581</p>
+                <p><i class="bi bi-envelope"></i> info@desa.id</p>
+                <!-- <p><i class="bi bi-telephone"></i> 0812-3456-7890</p>
+                <p><i class="bi bi-clock"></i> Senin - Jumat, 08:00 - 16:00</p> -->
+
+                <!-- Peta Lokasi -->
+                <h5 class="mt-4">Peta Lokasi</h5>
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d509810.2285515965!2d98.2399754734375!3d3.3764656000000106!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x303115679f6e25d3%3A0xf07a07d143e89d8d!2sKantor%20Camat%20Bangun%20Purba!5e0!3m2!1sid!2sid!4v1755143331916!5m2!1sid!2sid"
+                    width="100%" height="250" style="border:0;"
+                    allowfullscreen="" loading="lazy">
+                </iframe>
+
+            </div>
+
+            <!-- Form Kirim Pesan -->
+            <div class="col-md-7">
+                <h3 class="text-success">Kirim Pesan</h3>
+                <form method="POST" action="proses_kontak.php">
+                    <div class="mb-3">
+                        <label class="form-label">Nama</label>
+                        <input type="text" name="nama" class="form-control" required>
                     </div>
-                <?php } ?>
-            <?php } else { ?>
-                <p class="text-muted">Belum ada kegiatan yang tersedia.</p>
-            <?php } ?>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Pesan</label>
+                        <textarea name="pesan" rows="5" class="form-control" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-send"></i> Kirim</button>
+                </form>
+            </div>
         </div>
     </div>
 

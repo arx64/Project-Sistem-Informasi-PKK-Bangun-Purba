@@ -1,21 +1,49 @@
-<?php
-error_reporting(0);
-include 'config/db.php';
-$query = "
-    SELECT k.*, d.nama_dawis
-    FROM kegiatan k
-    LEFT JOIN dawis d ON k.id_dawis = d.id_dawis
-    ORDER BY k.tanggal DESC LIMIT 8
-";
-$result = $conn->query($query);
-?>
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sistem Informasi PKK</title>
+    <title>Profil - Sistem Informasi PKK</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {
+            packages: ["orgchart"]
+        });
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'Nama');
+            data.addColumn('string', 'Atasan');
+            data.addColumn('string', 'ToolTip');
+
+            // Struktur Organisasi
+            data.addRows([
+                [{
+                    v: 'ketua',
+                    f: '<div style="padding:10px"><b>KETUA</b><br>Ny. Mentari Boby Arianto<br><img src="https://i.pinimg.com/736x/92/b6/3e/92b63e9f521161e94f6221560dc354d3.jpg" width="70"></div>'
+                }, '', 'Ketua PKK'],
+                [{
+                    v: 'wakil',
+                    f: '<div style="padding:10px"><b>WAKIL KETUA</b><br>Ny. Suhartati A Jamil Ritonga<br><img src="https://i.pinimg.com/736x/92/b6/3e/92b63e9f521161e94f6221560dc354d3.jpg" width="70"></div>'
+                }, 'ketua', 'Wakil Ketua'],
+                [{
+                    v: 'sekretaris',
+                    f: '<div style="padding:10px"><b>SEKRETARIS</b><br>Ny. Kartina Dahri<br><img src="https://i.pinimg.com/736x/92/b6/3e/92b63e9f521161e94f6221560dc354d3.jpg" width="70"></div>'
+                }, 'wakil', 'Sekretaris'],
+                [{
+                    v: 'bendahara',
+                    f: '<div style="padding:10px"><b>BENDAHARA</b><br>Ny. Sauli Tarigan<br><img src="https://i.pinimg.com/736x/92/b6/3e/92b63e9f521161e94f6221560dc354d3.jpg" width="70"></div>'
+                }, 'wakil', 'Bendahara']
+            ]);
+
+            var chart = new google.visualization.OrgChart(document.getElementById('chart_div'));
+            chart.draw(data, {
+                allowHtml: true
+            });
+        }
+    </script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -44,11 +72,6 @@ $result = $conn->query($query);
             text-align: center;
         }
 
-        .card-img-top {
-            height: 180px;
-            object-fit: cover;
-        }
-
         footer {
             background-color: #004d00;
             color: white;
@@ -65,15 +88,6 @@ $result = $conn->query($query);
             background-size: cover;
             background-position: center;
             height: 300px;
-        }
-
-        a {
-            text-decoration: none;
-            color: black;
-        }
-
-        a:hover {
-            color: #006400;
         }
     </style>
 </head>
@@ -92,8 +106,8 @@ $result = $conn->query($query);
             </button>
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav ms-auto text-center">
-                    <li class="nav-item"><a class="nav-link nav-link-active" href="/index.php"><i class="bi bi-house-door"></i> Beranda</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/profil.php"><i class="bi bi-person"></i> Profil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/index.php"><i class="bi bi-house-door"></i> Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-active" href="/profil.php"><i class="bi bi-person"></i> Profil</a></li>
                     <li class="nav-item"><a class="nav-link" href="/kegiatan.php"><i class="bi bi-calendar-event"></i> Kegiatan</a></li>
                     <li class="nav-item"><a class="nav-link" href="/kontak.php"><i class="bi bi-envelope"></i> Kontak</a></li>
                 </ul>
@@ -104,38 +118,33 @@ $result = $conn->query($query);
     <!-- Hero Banner -->
     <div class="hero img-hero">
         <div class="container bg-dark bg-opacity-50 p-2 rounded">
-            <h1 class="fw-bold">Selamat Datang di Sistem Informasi PKK</h1>
-            <p class="lead">Kecamatan Bangun Purba</p>
+            <h1 class="fw-bold">Profil PKK Bangun Purba</h1>
+            <p class="lead">Mengenal lebih dekat visi, misi, dan sejarah PKK</p>
         </div>
     </div>
 
-    <!-- Berita -->
+    <!-- Konten Profil -->
     <div class="container my-5">
-        <h2 class="mb-4 text-success">Berita & Kegiatan Terbaru</h2>
-        <div class="row g-4">
-            <?php if ($result->num_rows > 0) { ?>
-                <?php while ($row = $result->fetch_assoc()) {
-                    $foto = !empty($row['foto']) ? 'uploads/kegiatan/' . htmlspecialchars($row['foto']) : 'uploads/no-image-available.png';
-                ?>
-                    <div class="col-lg-3 col-md-4 col-sm-6">
-                        <div class="card shadow-sm h-100">
-                            <a href="detail_kegiatan.php?id=<?php echo $row['id_kegiatan']; ?>">
-                                <img src="<?php echo $foto; ?>" class="card-img-top" alt="Foto Kegiatan">
-                                <div class="card-body">
-                                    <h5 class="card-title"><?php echo htmlspecialchars($row['nama_kegiatan']); ?></h5>
-                                    <p class="card-text"><?php echo substr(strip_tags($row['deskripsi']), 0, 100) . '...'; ?></p>
-                                </div>
-                                <div class="card-footer small text-muted">
-                                    <?php echo htmlspecialchars($row['nama_dawis']); ?> | <?php echo date('d M Y', strtotime($row['tanggal'])); ?>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                <?php } ?>
-            <?php } else { ?>
-                <p class="text-muted">Belum ada kegiatan yang tersedia.</p>
-            <?php } ?>
-        </div>
+        <h2 class="mb-4 text-success">Tentang Kami</h2>
+        <p>
+            PKK Bangun Purba adalah organisasi yang berperan aktif dalam meningkatkan kesejahteraan keluarga
+            melalui berbagai kegiatan pemberdayaan, pendidikan, kesehatan, dan ekonomi masyarakat.
+        </p>
+
+        <h3 class="mt-5 text-success">Visi</h3>
+        <p>
+            Terwujudnya keluarga yang beriman, bertakwa, berakhlak mulia, sehat, sejahtera, maju, dan mandiri.
+        </p>
+
+        <h3 class="mt-5 text-success">Misi</h3>
+        <ul>
+            <li>Meningkatkan peran serta masyarakat dalam program pemberdayaan keluarga.</li>
+            <li>Menumbuhkan kesadaran hidup sehat dan berkelanjutan.</li>
+            <li>Meningkatkan keterampilan dan ekonomi kreatif masyarakat.</li>
+        </ul>
+
+        <h3 class=" my-5 text-success" style="text-align:center">Struktur Organisasi PKK</h3>
+        <div id="chart_div"></div>
     </div>
 
     <!-- Footer -->

@@ -1,6 +1,6 @@
 <?php
 session_start();
-if ($_SESSION['role'] != 'admin') {
+if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['admin', 'pkk'])) {
     header("Location: ../auth/login.php");
     exit;
 }
@@ -54,14 +54,23 @@ if (isset($_POST['update'])) {
 if (isset($_GET['hapus'])) {
     $id = $_GET['hapus'];
 
-    $stmt = $conn->prepare("DELETE FROM dawis WHERE id_dawis=?");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $stmt->close();
+    // Hapus semua anggota yang terhubung ke dawis ini
+    // $stmtAnggota = $conn->prepare("DELETE FROM anggota WHERE id_dawis = ?");
+    // $stmtAnggota->bind_param("i", $id);
+    // $stmtAnggota->execute();
+
+    // Baru hapus dawis
+    $stmtDawis = $conn->prepare("DELETE FROM dawis WHERE id_dawis = ?");
+    $stmtDawis->bind_param("i", $id);
+    $stmtDawis->execute();
+
+    // $stmt->close();
 
     header("Location: /dawis");
     exit;
 }
+
+        
 
 // READ Dawis
 $result = $conn->query("SELECT * FROM dawis ORDER BY id_dawis ASC");

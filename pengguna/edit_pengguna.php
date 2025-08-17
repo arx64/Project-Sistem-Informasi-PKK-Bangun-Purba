@@ -37,7 +37,7 @@ if (isset($_POST['update'])) {
         $stmt = $conn->prepare("UPDATE pengguna SET username = ?, password = ?, role = ? WHERE id_pengguna = ?");
         $stmt->bind_param("sssi", $username, $password, $role, $id);
     } else {
-        $stmt = $conn->prepare("UPDATE users SET username = ?, role = ? WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE pengguna SET username = ?, role = ? WHERE id_pengguna = ?");
         $stmt->bind_param("ssi", $username, $role, $id);
     }
     $stmt->execute();
