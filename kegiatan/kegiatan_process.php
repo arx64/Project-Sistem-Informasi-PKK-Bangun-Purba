@@ -13,6 +13,26 @@ if (!is_dir($uploadDir)) {
     mkdir($uploadDir, 0777, true);
 }
 
+// Fungsi validasi file upload
+function validasiFile($file)
+{
+    $maxSize = 2 * 1024 * 1024; // 2MB
+    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+    // Cek ukuran file
+    if ($file['size'] > $maxSize) {
+        return "Ukuran file maksimal 2MB!";
+    }
+
+    // Cek tipe MIME
+    $fileType = mime_content_type($file['tmp_name']);
+    if (!in_array($fileType, $allowedTypes)) {
+        return "Hanya file gambar yang diperbolehkan (JPG, PNG, GIF, WEBP)!";
+    }
+
+    return true;
+}
+
 // ========== TAMBAH DATA ==========
 if (isset($_POST['tambah'])) {
     $id_dawis = $_POST['id_dawis'];
@@ -23,10 +43,17 @@ if (isset($_POST['tambah'])) {
     // Upload foto
     $foto = null;
     if (!empty($_FILES['foto']['name'])) {
-        $fotoName = time() . "_" . basename($_FILES['foto']['name']);
-        $fotoPath = $uploadDir . $fotoName;
-        if (move_uploaded_file($_FILES['foto']['tmp_name'], $fotoPath)) {
-            $foto = $fotoName;
+        $validasi = validasiFile($_FILES['foto']);
+        if ($validasi === true) {
+            $fotoName = time() . "_" . basename($_FILES['foto']['name']);
+            $fotoPath = $uploadDir . $fotoName;
+            if (move_uploaded_file($_FILES['foto']['tmp_name'], $fotoPath)) {
+                $foto = $fotoName;
+            }
+        } else {
+            $_SESSION['error'] = $validasi;
+            header("Location: /kegiatan");
+            exit;
         }
     }
 
@@ -35,7 +62,8 @@ if (isset($_POST['tambah'])) {
     $stmt->execute();
     $stmt->close();
 
-    header("Location: index.php");
+    $_SESSION['success'] = "Data kegiatan berhasil ditambahkan!";
+    header("Location: /kegiatan");
     exit;
 }
 
@@ -52,14 +80,21 @@ if (isset($_POST['update'])) {
 
     // Jika upload foto baru
     if (!empty($_FILES['foto']['name'])) {
-        $fotoName = time() . "_" . basename($_FILES['foto']['name']);
-        $fotoPath = $uploadDir . $fotoName;
-        if (move_uploaded_file($_FILES['foto']['tmp_name'], $fotoPath)) {
-            $foto = $fotoName;
-            // Hapus foto lama jika ada
-            if (!empty($foto_lama) && file_exists($uploadDir . $foto_lama)) {
-                unlink($uploadDir . $foto_lama);
+        $validasi = validasiFile($_FILES['foto']);
+        if ($validasi === true) {
+            $fotoName = time() . "_" . basename($_FILES['foto']['name']);
+            $fotoPath = $uploadDir . $fotoName;
+            if (move_uploaded_file($_FILES['foto']['tmp_name'], $fotoPath)) {
+                $foto = $fotoName;
+                // Hapus foto lama jika ada
+                if (!empty($foto_lama) && file_exists($uploadDir . $foto_lama)) {
+                    unlink($uploadDir . $foto_lama);
+                }
             }
+        } else {
+            $_SESSION['error'] = $validasi;
+            header("Location: edit.php?id=" . $id_kegiatan);
+            exit;
         }
     }
 
@@ -68,7 +103,8 @@ if (isset($_POST['update'])) {
     $stmt->execute();
     $stmt->close();
 
-    header("Location: index.php");
+    $_SESSION['success'] = "Data kegiatan berhasil diperbarui!";
+    header("Location: /kegiatan");
     exit;
 }
 
@@ -95,6 +131,7 @@ if (isset($_GET['hapus'])) {
         unlink($uploadDir . $foto);
     }
 
-    header("Location: index.php");
+    $_SESSION['success'] = "Data kegiatan berhasil dihapus!";
+    header("Location: /kegiatan");
     exit;
 }

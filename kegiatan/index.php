@@ -50,6 +50,20 @@ $result = $conn->query("
 
                     <!-- Form Tambah Kegiatan -->
                     <?php if (in_array($_SESSION['role'], ['admin', 'pkk'])): ?>
+                        <?php if (isset($_SESSION['error'])): ?>
+                            <div class="alert alert-danger">
+                                <?= $_SESSION['error']; ?>
+                            </div>
+                            <?php unset($_SESSION['error']); ?>
+                        <?php endif; ?>
+
+                        <?php if (isset($_SESSION['success'])): ?>
+                            <div class="alert alert-success">
+                                <?= $_SESSION['success']; ?>
+                            </div>
+                            <?php unset($_SESSION['success']); ?>
+                        <?php endif; ?>
+
                         <div class="card mb-4">
                             <div class="card-header">
                                 <h5>Tambah Kegiatan</h5>

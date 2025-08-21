@@ -91,7 +91,7 @@
             <div class="col-md-5">
                 <h3 class="text-success">Informasi Kontak</h3>
                 <p><i class="bi bi-geo-alt"></i> Jl. Perintis Kemerdekaan, Bangun Purba Tengah, Kec. Bangun Purba, Kabupaten Deli Serdang, Sumatera Utara 20581</p>
-                <p><i class="bi bi-envelope"></i> info@desa.id</p>
+                <p><i class="bi bi-envelope"></i> pkkbangunpurba@gmail.com</p>
                 <!-- <p><i class="bi bi-telephone"></i> 0812-3456-7890</p>
                 <p><i class="bi bi-clock"></i> Senin - Jumat, 08:00 - 16:00</p> -->
 
@@ -138,17 +138,17 @@
                 <div class="col-md-3">
                     <h5>Link Terkait</h5>
                     <ul class="list-unstyled">
-                        <li><a href="#"><i class="bi bi-tiktok"></i> Tiktok</a></li>
+                        <li><a href="https://www.tiktok.com/@pkk.bangun.purba"><i class="bi bi-tiktok"></i> Tiktok</a></li>
                         <li><a href="https://www.instagram.com/pkkbangunpurba/"><i class="bi bi-instagram"></i> IG</a></li>
-                        <li><a href="#"><i class="bi bi-facebook"></i> FB</a></li>
+                        <li><a href="https://web.facebook.com/profile.php?id=61579244115376"><i class="bi bi-facebook"></i> FB</a></li>
                     </ul>
                 </div>
                 <div class="col-md-3 text-md-end">
                     <h5>Kontak</h5>
-                    <p>Email: info@desa.id</p>
+                    <p>Email: <a href="mailto:pkkbangunpurba@gmail.com">pkkbangunpurba@gmail.com</a></p>
                 </div>
             </div>
-            <div class="text-center mt-3">&copy; <?php echo date('Y'); ?> Sistem Informasi PKK</div>
+            <div class="text-center mt-3">&copy; <?php echo date('Y'); ?> Sistem Informasi PKK - Created By <a href="https://www.instagram.com/_arifin.ilham06" target="_blank">Muhammad Arifin Ilham</a> & <a href="https://www.instagram.com/_andinidwiputri_" target="_blank">Andini Dwi Putri</a></div>
         </div>
     </footer>
 
