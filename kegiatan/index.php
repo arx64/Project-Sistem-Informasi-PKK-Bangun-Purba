@@ -23,9 +23,11 @@ $result = $conn->query("
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Kegiatan PKK</title>
-
     <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="../dist/css/adminlte.min.css">
+    <!-- Tambahkan CSS DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -117,7 +119,7 @@ $result = $conn->query("
                             <h5>Data Kegiatan</h5>
                         </div>
                         <div class="card-body">
-                            <table class="table table-bordered table-striped table-responsive">
+                            <table id="tabelKegiatan" class="table table-bordered table-striped table-responsive">
                                 <thead>
                                     <tr>
                                         <th>No</th>
@@ -201,6 +203,21 @@ $result = $conn->query("
     <script src="../plugins/jquery/jquery.min.js"></script>
     <script src="../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="../dist/js/adminlte.min.js"></script>
+    <!-- Tambahkan JS DataTables -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#tabelKegiatan').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json"
+                },
+                "pageLength": 10
+            });
+        });
+    </script>
 </body>
 
 </html>

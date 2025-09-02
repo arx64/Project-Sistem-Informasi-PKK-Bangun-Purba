@@ -30,11 +30,11 @@
                 }, 'ketua', 'Wakil Ketua'],
                 [{
                     v: 'sekretaris',
-                    f: '<div style="padding:10px"><b>SEKRETARIS</b><br>Ny. Kartina Dahri<br><img src="https://i.pinimg.com/736x/92/b6/3e/92b63e9f521161e94f6221560dc354d3.jpg" width="70"></div>'
+                    f: '<div style="padding:10px"><b>SEKRETARIS</b><br>Ny. Sauli Tarigan<br><img src="assets/img/sekretaris.jpg" width="70"></div>'
                 }, 'wakil', 'Sekretaris'],
                 [{
                     v: 'bendahara',
-                    f: '<div style="padding:10px"><b>BENDAHARA</b><br>Ny. Sauli Tarigan<br><img src="https://i.pinimg.com/736x/92/b6/3e/92b63e9f521161e94f6221560dc354d3.jpg" width="70"></div>'
+                    f: '<div style="padding:10px"><b>BENDAHARA</b><br>Ny. Kartina Dahri<br><img src="https://i.pinimg.com/736x/92/b6/3e/92b63e9f521161e94f6221560dc354d3.jpg" width="70"></div>'
                 }, 'wakil', 'Bendahara']
             ]);
 

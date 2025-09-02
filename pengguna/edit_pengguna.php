@@ -43,6 +43,7 @@ if (isset($_POST['update'])) {
     $stmt->execute();
     $stmt->close();
 
+    $_SESSION['success'] = "Data pengguna berhasil diperbarui.";
     header("Location: /pengguna");
     exit;
 }

@@ -70,7 +70,7 @@ if (isset($_GET['hapus'])) {
     exit;
 }
 
-        
+
 
 // READ Dawis
 $result = $conn->query("SELECT * FROM dawis ORDER BY id_dawis ASC");
@@ -87,6 +87,9 @@ $result = $conn->query("SELECT * FROM dawis ORDER BY id_dawis ASC");
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="../dist/css/adminlte.min.css">
+    <!-- Tambahkan CSS DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -139,10 +142,10 @@ $result = $conn->query("SELECT * FROM dawis ORDER BY id_dawis ASC");
                     <div class="card">
                         <div class="card-header">Daftar Dawis</div>
                         <div class="card-body">
-                            <table class="table table-bordered table-striped">
+                            <table id="tabelDawis" class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
+                                        <th>No.</th>
                                         <th>Kode Dawis</th>
                                         <th>Nama Dawis</th>
                                         <th>RT</th>
@@ -151,9 +154,11 @@ $result = $conn->query("SELECT * FROM dawis ORDER BY id_dawis ASC");
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php while ($row = $result->fetch_assoc()) { ?>
+                                    <?php $no = 0;
+                                    while ($row = $result->fetch_assoc()) {
+                                        $no++; ?>
                                         <tr>
-                                            <td><?= $row['id_dawis'] ?></td>
+                                            <td><?= $no; ?></td>
                                             <td><?= $row['kode_dawis'] ?></td>
                                             <td><?= $row['nama_dawis'] ?></td>
                                             <td><?= $row['rt'] ?></td>
@@ -179,6 +184,21 @@ $result = $conn->query("SELECT * FROM dawis ORDER BY id_dawis ASC");
     <script src="../plugins/jquery/jquery.min.js"></script>
     <script src="../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="../dist/js/adminlte.min.js"></script>
+    <!-- Tambahkan JS DataTables -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#tabelDawis').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json"
+                },
+                "pageLength": 10
+            });
+        });
+    </script>
 </body>
 
 </html>

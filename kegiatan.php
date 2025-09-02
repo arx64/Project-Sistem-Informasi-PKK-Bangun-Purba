@@ -5,14 +5,26 @@ error_reporting(0);
 // Koneksi database
 include 'config/db.php';
 
-// Ambil data kegiatan beserta nama dawis
+// Konfigurasi Pagination
+$limit = 8; // jumlah data per halaman
+$page  = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($page < 1) $page = 1;
+$offset = ($page - 1) * $limit;
+
+// Ambil data kegiatan beserta nama dawis (dengan limit + offset)
 $query = "
-    SELECT k.*, d.nama_dawis 
+    SELECT k.*, d.nama_dawis
     FROM kegiatan k
     LEFT JOIN dawis d ON k.id_dawis = d.id_dawis
     ORDER BY k.tanggal DESC
+    LIMIT $limit OFFSET $offset
 ";
 $result = $conn->query($query);
+
+// Hitung total data untuk pagination
+$totalQuery = $conn->query("SELECT COUNT(*) as total FROM kegiatan");
+$totalData  = $totalQuery->fetch_assoc()['total'];
+$totalPages = ceil($totalData / $limit);
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -125,7 +137,7 @@ $result = $conn->query($query);
                     <div class="col-lg-3 col-md-4 col-sm-6">
                         <div class="card shadow-sm h-100">
                             <a href="detail_kegiatan.php?id=<?php echo $row['id_kegiatan']; ?>">
-                                <img src="<?php echo $foto; ?>" class="card-img-top" alt="Foto Kegiatan">
+                                <img src="<?php echo $foto; ?>" class="card-img-top" alt="Foto Kegiatan" loading="lazy">
                                 <div class="card-body">
                                     <h5 class="card-title"><?php echo htmlspecialchars($row['nama_kegiatan']); ?></h5>
                                     <p class="card-text"><?php echo substr(strip_tags($row['deskripsi']), 0, 100) . '...'; ?></p>
@@ -141,6 +153,25 @@ $result = $conn->query($query);
                 <p class="text-muted">Belum ada kegiatan yang tersedia.</p>
             <?php } ?>
         </div>
+
+        <!-- Pagination -->
+        <?php if ($totalPages > 1) { ?>
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center mt-4">
+                    <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
+                        <a class="page-link" href="?page=<?= $page - 1 ?>"><i class="bi bi-chevron-left"></i></a>
+                    </li>
+                    <?php for ($i = 1; $i <= $totalPages; $i++) { ?>
+                        <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
+                            <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                        </li>
+                    <?php } ?>
+                    <li class="page-item <?= ($page >= $totalPages) ? 'disabled' : '' ?>">
+                        <a class="page-link" href="?page=<?= $page + 1 ?>"><i class="bi bi-chevron-right"></i></a>
+                    </li>
+                </ul>
+            </nav>
+        <?php } ?>
     </div>
 
     <!-- Footer -->

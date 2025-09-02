@@ -20,21 +20,21 @@ if (!empty($dawis)) {
 }
 $whereSQL = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-        // Query laporan
-        // $sql = "
-        //     SELECT k.id_kegiatan, k.nama_kegiatan, k.tanggal, d.nama_dawis, k.deskripsi
-        //     FROM kegiatan k
-        //     LEFT JOIN dawis d ON k.id_dawis = d.id_dawis
-        //     $whereSQL
-        //     ORDER BY k.tanggal DESC
-        // ";
-        //         $sql = "
-        //     SELECT k.nama_kegiatan, k.tanggal, k.deskripsi, k.foto
-        //     FROM kegiatan k
-        //     $whereSQL
-        //     ORDER BY k.tanggal DESC
-        // ";
-        $sql = "
+// Query laporan
+// $sql = "
+//     SELECT k.id_kegiatan, k.nama_kegiatan, k.tanggal, d.nama_dawis, k.deskripsi
+//     FROM kegiatan k
+//     LEFT JOIN dawis d ON k.id_dawis = d.id_dawis
+//     $whereSQL
+//     ORDER BY k.tanggal DESC
+// ";
+//         $sql = "
+//     SELECT k.nama_kegiatan, k.tanggal, k.deskripsi, k.foto
+//     FROM kegiatan k
+//     $whereSQL
+//     ORDER BY k.tanggal DESC
+// ";
+$sql = "
     SELECT k.nama_kegiatan, k.tanggal, k.deskripsi, k.foto, d.nama_dawis
     FROM kegiatan k
     LEFT JOIN dawis d ON k.id_dawis = d.id_dawis
@@ -43,7 +43,7 @@ $whereSQL = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 ";
 
 
-        $result = $conn->query($sql);
+$result = $conn->query($sql);
 
 // Ambil data Dawis untuk filter
 $dawisList = $conn->query("SELECT * FROM dawis ORDER BY nama_dawis ASC");
@@ -59,6 +59,9 @@ $dawisList = $conn->query("SELECT * FROM dawis ORDER BY nama_dawis ASC");
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="../dist/css/adminlte.min.css">
+    <!-- Tambahkan CSS DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -120,7 +123,7 @@ $dawisList = $conn->query("SELECT * FROM dawis ORDER BY nama_dawis ASC");
                             <strong>Hasil Laporan</strong>
                         </div>
                         <div class="card-body">
-                            <table class="table table-bordered table-striped table-responsive">
+                            <table id="tabelLaporan" class="table table-bordered table-striped table-responsive">
                                 <thead>
                                     <tr>
                                         <th>No</th>
@@ -157,6 +160,21 @@ $dawisList = $conn->query("SELECT * FROM dawis ORDER BY nama_dawis ASC");
     <script src="../plugins/jquery/jquery.min.js"></script>
     <script src="../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="../dist/js/adminlte.min.js"></script>
+    <!-- Tambahkan JS DataTables -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#tabelLaporan').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json"
+                },
+                "pageLength": 10
+            });
+        });
+    </script>
 </body>
 
 </html>

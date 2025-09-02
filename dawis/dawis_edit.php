@@ -1,6 +1,6 @@
 <?php
 session_start();
-if ($_SESSION['role'] != 'admin') {
+if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['admin', 'pkk'])) {
     header("Location: ../auth/login.php");
     exit;
 }

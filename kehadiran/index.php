@@ -82,13 +82,15 @@ if ($id_kegiatan) {
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
+                                        <th>No.</th>
                                         <th>Nama Anggota</th>
                                         <th style="width: 300px;">Status Kehadiran</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php while ($a = $anggota->fetch_assoc()): ?>
+                                    <?php $no = 0; while ($a = $anggota->fetch_assoc()): $no++;?>
                                         <tr>
+                                            <td><?= $no; ?></td>
                                             <td><?= htmlspecialchars($a['nama_anggota']) ?></td>
                                             <td>
                                                 <?php $status = $kehadiranData[$a['id_anggota']] ?? ''; ?>

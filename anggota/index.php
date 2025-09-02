@@ -17,13 +17,14 @@ if (isset($_POST['tambah'])) {
     $stmt->execute();
     $stmt->close();
 
+    $_SESSION['success'] = "Data anggota berhasil ditambahkan!";
     header("Location: /anggota");
     exit;
 }
 
 // Hapus anggota
 if (isset($_GET['hapus'])) {
-    $id = $_GET['hapus'];
+    $id = intval($_GET['hapus']);
 
     $check = $conn->prepare("SELECT COUNT(*) FROM kehadiran WHERE id_anggota = ?");
     $check->bind_param("i", $id);
@@ -33,19 +34,21 @@ if (isset($_GET['hapus'])) {
     $check->close();
 
     if ($count > 0) {
-        echo "⚠ Tidak bisa hapus, anggota ini masih punya data kehadiran!";
+        $_SESSION['error'] = "Tidak bisa hapus! Anggota ini masih memiliki data kehadiran.";
     } else {
         $stmt = $conn->prepare("DELETE FROM anggota WHERE id_anggota = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $stmt->close();
-        header("Location: /anggota");
-        exit;
+
+        $_SESSION['success'] = "Data anggota berhasil dihapus!";
     }
+
+    header("Location: /anggota");
+    exit;
 }
 
-
-// Ambil data anggota
+// Ambil data anggota (query awal)
 $qAnggota = $conn->query("
     SELECT a.id_anggota, a.nama_anggota, d.nama_dawis, d.rt, d.rw, a.alamat
     FROM anggota a
@@ -66,6 +69,9 @@ $qDawis = $conn->query("SELECT * FROM dawis ORDER BY nama_dawis ASC");
     <title>Anggota PKK</title>
     <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="../dist/css/adminlte.min.css">
+    <!-- Tambahkan CSS DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -150,7 +156,7 @@ $qDawis = $conn->query("SELECT * FROM dawis ORDER BY nama_dawis ASC");
                             </form>
 
                             <!-- Tabel Data -->
-                            <table class="table table-bordered">
+                            <table id="tabelAnggota" class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
                                         <th>No</th>
@@ -169,40 +175,40 @@ $qDawis = $conn->query("SELECT * FROM dawis ORDER BY nama_dawis ASC");
                                     }
 
                                     $data = mysqli_query($conn, "
-        SELECT anggota.*, dawis.nama_dawis 
-        FROM anggota 
-        JOIN dawis ON anggota.id_dawis = dawis.id_dawis 
-        $filter
-    ");
+            SELECT anggota.*, dawis.nama_dawis 
+            FROM anggota 
+            JOIN dawis ON anggota.id_dawis = dawis.id_dawis 
+            $filter
+        ");
 
                                     $no = 1;
                                     while ($row = mysqli_fetch_assoc($data)) {
                                         echo "<tr>
-            <td>{$no}</td>
-            <td>{$row['nama_anggota']}</td>
-            <td>{$row['alamat']}</td>
-            <td>{$row['nama_dawis']}</td>
-            <td>";
+                <td>{$no}</td>
+                <td>{$row['nama_anggota']}</td>
+                <td>{$row['alamat']}</td>
+                <td>{$row['nama_dawis']}</td>
+                <td>";
 
-                                        // Hanya tampilkan edit/hapus untuk role admin & pkk
                                         if (in_array($_SESSION['role'], ['admin', 'pkk'])) {
                                             echo "<a href='anggota_edit.php?id={$row['id_anggota']}' class='btn btn-warning btn-sm'>
-                    <i class='fas fa-edit'></i>
-                  </a>
-                  <a href='?hapus={$row['id_anggota']}' class='btn btn-danger btn-sm' onclick=\"return confirm('Hapus data?')\">
-                    <i class='fas fa-trash'></i>
-                  </a>";
+                        <i class='fas fa-edit'></i>
+                      </a>
+                      <a href=\"javascript:void(0)\" 
+                         onclick=\"confirmDelete('?hapus={$row['id_anggota']}')\" 
+                         class=\"btn btn-danger btn-sm\">
+                         <i class=\"fas fa-trash\"></i>
+                      </a>";
                                         } else {
                                             echo "<span class='text-muted'>Tidak ada aksi</span>";
                                         }
 
                                         echo "</td>
-        </tr>";
+            </tr>";
                                         $no++;
                                     }
                                     ?>
                                 </tbody>
-
                             </table>
 
                         </div>
@@ -219,6 +225,67 @@ $qDawis = $conn->query("SELECT * FROM dawis ORDER BY nama_dawis ASC");
     <script src="../plugins/jquery/jquery.min.js"></script>
     <script src="../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="../dist/js/adminlte.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Tambahkan JS DataTables -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#tabelAnggota').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json"
+                },
+                "pageLength": 10
+            });
+        });
+    </script>
+    <script>
+        // Konfirmasi Hapus
+        function confirmDelete(url) {
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Data anggota dan presensi terkait akan dihapus!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        }
+    </script>
+
+    <?php if (isset($_SESSION['success'])): ?>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: '<?= $_SESSION['success']; ?>',
+                timer: 2000,
+                showConfirmButton: false
+            })
+        </script>
+    <?php unset($_SESSION['success']);
+    endif; ?>
+
+    <?php if (isset($_SESSION['error'])): ?>
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: '<?= $_SESSION['error']; ?>',
+                confirmButtonColor: '#d33'
+            })
+        </script>
+    <?php unset($_SESSION['error']);
+    endif; ?>
+
 </body>
 
 </html>

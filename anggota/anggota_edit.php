@@ -40,6 +40,7 @@ if (isset($_POST['update'])) {
     $stmt->execute();
     $stmt->close();
 
+    $_SESSION['success'] = "Data anggota berhasil diperbarui.";
     header("Location: index.php");
     exit;
 }
