@@ -130,7 +130,9 @@ if (!$kegiatan) {
             </div>
             <div class="col-md-6">
                 <h3 class="text-success">Deskripsi Kegiatan</h3>
+                <div style="overflow: auto; height:290px;">
                 <p><?php echo nl2br(htmlspecialchars($kegiatan['deskripsi'])); ?></p>
+                </div>
             </div>
         </div>
         <div class="mt-4">

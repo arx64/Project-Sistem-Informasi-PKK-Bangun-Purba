@@ -26,7 +26,7 @@
                 }, '', 'Ketua PKK'],
                 [{
                     v: 'wakil',
-                    f: '<div style="padding:10px"><b>WAKIL KETUA</b><br>Ny. Suhartati A Jamil Ritonga<br><img src="https://i.pinimg.com/736x/92/b6/3e/92b63e9f521161e94f6221560dc354d3.jpg" width="70"></div>'
+                    f: '<div style="padding:10px"><b>WAKIL KETUA</b><br>Ny. Suhartati A Jamil Ritonga<br><img src="assets/img/wakil-ketua1.jpg" width="70"></div>'
                 }, 'ketua', 'Wakil Ketua'],
                 [{
                     v: 'sekretaris',
@@ -34,7 +34,7 @@
                 }, 'wakil', 'Sekretaris'],
                 [{
                     v: 'bendahara',
-                    f: '<div style="padding:10px"><b>BENDAHARA</b><br>Ny. Kartina Dahri<br><img src="https://i.pinimg.com/736x/92/b6/3e/92b63e9f521161e94f6221560dc354d3.jpg" width="70"></div>'
+                    f: '<div style="padding:10px"><b>BENDAHARA</b><br>Ny. Kartina Dahri<br><img src="assets/img/bendahara.jpg" width="70"></div>'
                 }, 'wakil', 'Bendahara']
             ]);
 

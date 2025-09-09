@@ -10,27 +10,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $id_kegiatan = intval($_POST['id_kegiatan']);
     $statuses = $_POST['status'] ?? [];
 
-    // 1. Proses Status Kehadiran Anggota
     foreach ($statuses as $id_anggota => $status) {
         $id_anggota = intval($id_anggota);
-        $status = $conn->real_escape_string($status);
 
-        // Cek apakah data sudah ada untuk di-update atau perlu di-insert
-        $stmt_check = $conn->prepare("SELECT id_kehadiran FROM kehadiran WHERE id_kegiatan = ? AND id_anggota = ?");
-        $stmt_check->bind_param("ii", $id_kegiatan, $id_anggota);
-        $stmt_check->execute();
-        $result = $stmt_check->get_result();
-
-        if ($result->num_rows > 0) {
-            // Update data yang sudah ada
-            $stmt_update = $conn->prepare("UPDATE kehadiran SET status = ? WHERE id_kegiatan = ? AND id_anggota = ?");
-            $stmt_update->bind_param("sii", $status, $id_kegiatan, $id_anggota);
-            $stmt_update->execute();
+        if ($status == '') {
+            // Jika kosong, hapus data absensi anggota tersebut
+            $stmt = $conn->prepare("DELETE FROM kehadiran WHERE id_kegiatan=? AND id_anggota=?");
+            $stmt->bind_param("ii", $id_kegiatan, $id_anggota);
+            $stmt->execute();
+            $stmt->close();
         } else {
-            // Insert data baru
-            $stmt_insert = $conn->prepare("INSERT INTO kehadiran (id_kegiatan, id_anggota, status) VALUES (?, ?, ?)");
-            $stmt_insert->bind_param("iis", $id_kegiatan, $id_anggota, $status);
-            $stmt_insert->execute();
+            // Cek apakah sudah ada data absensi untuk anggota & kegiatan ini
+            $cek = $conn->prepare("SELECT id_kehadiran FROM kehadiran WHERE id_kegiatan=? AND id_anggota=?");
+            $cek->bind_param("ii", $id_kegiatan, $id_anggota);
+            $cek->execute();
+            $cek->store_result();
+
+            if ($cek->num_rows > 0) {
+                // Update jika sudah ada
+                $update = $conn->prepare("UPDATE kehadiran SET status=? WHERE id_kegiatan=? AND id_anggota=?");
+                $update->bind_param("sii", $status, $id_kegiatan, $id_anggota);
+                $update->execute();
+                $update->close();
+            } else {
+                // Insert jika belum ada
+                $insert = $conn->prepare("INSERT INTO kehadiran (id_kegiatan, id_anggota, status) VALUES (?, ?, ?)");
+                $insert->bind_param("iis", $id_kegiatan, $id_anggota, $status);
+                $insert->execute();
+                $insert->close();
+            }
+            $cek->close();
         }
     }
 

@@ -109,13 +109,24 @@ $conn->close(); // Tutup koneksi setelah tidak diperlukan lagi
                             </table>
                         </div>
                         <div class="card-footer text-center">
-                            <a href="backup_sql.php" class="btn btn-primary btn-lg">
-                                <i class="fas fa-download"></i> Backup Seluruh Database (.sql)
-                            </a>
-                            <p class="text-muted mt-2 mb-0">
-                                <small>Tindakan ini akan mengunduh seluruh struktur dan data database dalam satu file SQL.</small>
+                            <div class="btn-group" role="group" aria-label="Backup Options">
+                                <!-- Full Backup -->
+                                <a href="backup_sql.php?mode=full" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-database"></i> Backup Full (.sql)
+                                </a>
+                                <!-- Structure Only -->
+                                <a href="backup_sql.php?mode=structure" class="btn btn-info btn-lg">
+                                    <i class="fas fa-server"></i> Backup Struktur (.sql)
+                                </a>
+                            </div>
+                            <p class="text-muted mt-3 mb-0">
+                                <small>
+                                    <strong>Backup Full</strong> menyimpan seluruh struktur dan data.<br>
+                                    <strong>Backup Struktur</strong> hanya menyimpan struktur tabel (tanpa data), id akan reset mulai dari 1.
+                                </small>
                             </p>
                         </div>
+
                     </div>
 
                     <!-- Card Informasi Tambahan -->

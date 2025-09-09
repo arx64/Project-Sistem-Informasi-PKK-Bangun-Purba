@@ -17,7 +17,10 @@ $fotoBukti = ''; // Variabel untuk menyimpan nama file foto bukti
 
 if ($id_kegiatan) {
     // Ambil semua anggota
-    $anggota = $conn->query("SELECT * FROM anggota ORDER BY nama_anggota");
+    $anggota = $conn->query("SELECT a.id_anggota, a.nama_anggota, a.alamat, b.nama_dawis 
+FROM anggota AS a 
+INNER JOIN dawis AS b ON a.id_dawis = b.id_dawis
+ORDER BY a.nama_anggota");
 
     // Ambil data kehadiran yang sudah ada
     $res = $conn->query("SELECT * FROM kehadiran WHERE id_kegiatan = $id_kegiatan");
@@ -46,6 +49,9 @@ if ($id_kegiatan) {
     <title>Kehadiran</title>
     <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="../dist/css/adminlte.min.css">
+    <!-- Tambahkan CSS DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -79,24 +85,38 @@ if ($id_kegiatan) {
                         <!-- PENTING: Tambahkan enctype="multipart/form-data" di sini -->
                         <form method="POST" action="kehadiran_process.php" enctype="multipart/form-data">
                             <input type="hidden" name="id_kegiatan" value="<?= $id_kegiatan ?>">
-                            <table class="table table-bordered">
+
+                            <!-- Tombol bulk action -->
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-sm btn-success" onclick="setAllStatus('Hadir')">Semua Hadir</button>
+                                <button type="button" class="btn btn-sm btn-warning" onclick="setAllStatus('Izin')">Semua Izin</button>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="setAllStatus('Tidak Hadir')">Semua Tidak Hadir</button>
+                            </div>
+
+                            <table id="tabelKehadiran" class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
                                         <th>No.</th>
                                         <th>Nama Anggota</th>
+                                        <th>Asal Dawis</th>
                                         <th style="width: 300px;">Status Kehadiran</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php $no = 0; while ($a = $anggota->fetch_assoc()): $no++;?>
+                                    <?php $no = 0;
+                                    while ($a = $anggota->fetch_assoc()): $no++; ?>
+                                        <?php $status = $kehadiranData[$a['id_anggota']] ?? ''; ?>
                                         <tr>
                                             <td><?= $no; ?></td>
                                             <td><?= htmlspecialchars($a['nama_anggota']) ?></td>
+                                            <td><?= htmlspecialchars($a['nama_dawis']) ?></td>
                                             <td>
-                                                <?php $status = $kehadiranData[$a['id_anggota']] ?? ''; ?>
-                                                <label><input type="radio" name="status[<?= $a['id_anggota'] ?>]" value="Hadir" <?= ($status == 'Hadir') ? 'checked' : '' ?>> Hadir</label>
-                                                <label class="ml-3"><input type="radio" name="status[<?= $a['id_anggota'] ?>]" value="Izin" <?= ($status == 'Izin') ? 'checked' : '' ?>> Izin</label>
-                                                <label class="ml-3"><input type="radio" name="status[<?= $a['id_anggota'] ?>]" value="Tidak Hadir" <?= ($status == 'Tidak Hadir') ? 'checked' : '' ?>> Tidak Hadir</label>
+                                                <select class="form-control form-control-sm" name="status[<?= $a['id_anggota'] ?>]">
+                                                    <option value="">-- Pilih --</option>
+                                                    <option value="Hadir" <?= ($status == 'Hadir') ? 'selected' : '' ?>>Hadir</option>
+                                                    <option value="Izin" <?= ($status == 'Izin') ? 'selected' : '' ?>>Izin</option>
+                                                    <option value="Tidak Hadir" <?= ($status == 'Tidak Hadir') ? 'selected' : '' ?>>Tidak Hadir</option>
+                                                </select>
                                             </td>
                                         </tr>
                                     <?php endwhile; ?>
@@ -106,7 +126,7 @@ if ($id_kegiatan) {
                             <!-- [BARU] Form Upload Foto Bukti Kehadiran -->
                             <div class="form-group mt-4">
                                 <label for="foto_bukti">Upload Foto Bukti Kehadiran</label>
-                                
+
                                 <!-- Tampilkan dan hapus pesan notifikasi -->
                                 <?php if (isset($_SESSION['success_message'])): ?>
                                     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -153,6 +173,28 @@ if ($id_kegiatan) {
     <script src="../plugins/jquery/jquery.min.js"></script>
     <script src="../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="../dist/js/adminlte.min.js"></script>
+    <!-- Tambahkan JS DataTables -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        // Fungsi untuk set semua status sekaligus
+        function setAllStatus(status) {
+            document.querySelectorAll('#tabelKehadiran select').forEach(function(select) {
+                select.value = status;
+            });
+        }
+
+        $(document).ready(function() {
+            $('#tabelKehadiran').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json"
+                },
+                "pageLength": 10
+            });
+        });
+    </script>
 </body>
 
 </html>
